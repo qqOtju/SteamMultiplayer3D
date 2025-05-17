@@ -1,28 +1,23 @@
 #if UNITY_EDITOR
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UIElements;
-using System.Reflection;
-using System.Linq;
-using System.IO;
 
 [InitializeOnLoad]
 public static class SceneSwitcherToolbar
 {
     private static string[] sceneNames = new string[0];
-    private static int selectedIndex = 0;
+    private static int selectedIndex;
     private static string lastActiveScene = "";
     private static VisualElement toolbarUI;
 
-    private static float positionOffset = 180f; // Move closer to Play button
-    private static float dropdownBoxHeight = 20f; // Dropdown button height
-
-    private static bool fetchAllScenes
-    {
-        get => EditorPrefs.GetBool("SceneSwitcher_FetchAllScenes", false);
-        set => EditorPrefs.SetBool("SceneSwitcher_FetchAllScenes", value);
-    }
+    private static readonly float positionOffset = 180f; // Move closer to Play button
+    private static readonly float dropdownBoxHeight = 20f; // Dropdown button height
 
     static SceneSwitcherToolbar()
     {
@@ -36,7 +31,13 @@ public static class SceneSwitcherToolbar
         EditorApplication.delayCall += AddToolbarUI;
     }
 
-    static void AddToolbarUI()
+    private static bool fetchAllScenes
+    {
+        get => EditorPrefs.GetBool("SceneSwitcher_FetchAllScenes", false);
+        set => EditorPrefs.SetBool("SceneSwitcher_FetchAllScenes", value);
+    }
+
+    private static void AddToolbarUI()
     {
         var toolbarType = typeof(Editor).Assembly.GetType("UnityEditor.Toolbar");
         if (toolbarType == null) return;
@@ -55,10 +56,7 @@ public static class SceneSwitcherToolbar
         if (leftContainer == null) return;
 
         // Remove old UI if it exists to prevent duplication
-        if (toolbarUI != null)
-        {
-            leftContainer.Remove(toolbarUI);
-        }
+        if (toolbarUI != null) leftContainer.Remove(toolbarUI);
 
         toolbarUI = new IMGUIContainer(OnGUI);
         toolbarUI.style.marginLeft = positionOffset;
@@ -66,80 +64,76 @@ public static class SceneSwitcherToolbar
         leftContainer.Add(toolbarUI);
     }
 
-    static void OnGUI()
+    private static void OnGUI()
     {
         CheckAndRefreshScenes();
 
         if (selectedIndex >= sceneNames.Length)
             selectedIndex = 0;
 
-        bool isPlaying = EditorApplication.isPlaying; // Check if in Play Mode
+        var isPlaying = EditorApplication.isPlaying; // Check if in Play Mode
 
         GUILayout.BeginHorizontal();
 
         // Fetch all scenes toggle button (Disabled in Play Mode)
         EditorGUI.BeginDisabledGroup(isPlaying);
-        bool newFetchAllScenes = GUILayout.Toggle(fetchAllScenes, "All Scenes", "Button", GUILayout.Height(dropdownBoxHeight));
+        var newFetchAllScenes =
+            GUILayout.Toggle(fetchAllScenes, "All Scenes", "Button", GUILayout.Height(dropdownBoxHeight));
         if (newFetchAllScenes != fetchAllScenes)
         {
             fetchAllScenes = newFetchAllScenes;
             RefreshSceneList();
             SelectCurrentScene();
         }
+
         EditorGUI.EndDisabledGroup();
 
         // Scene dropdown with the currently selected scene displayed (Disabled in Play Mode)
         EditorGUI.BeginDisabledGroup(isPlaying);
-        GUIStyle popupStyle = new GUIStyle(EditorStyles.popup)
+        var popupStyle = new GUIStyle(EditorStyles.popup)
         {
             fixedHeight = dropdownBoxHeight
         };
 
-        int newIndex = EditorGUILayout.Popup(selectedIndex, sceneNames, popupStyle, GUILayout.Width(150), GUILayout.Height(dropdownBoxHeight));
+        var newIndex = EditorGUILayout.Popup(selectedIndex, sceneNames, popupStyle, GUILayout.Width(150),
+            GUILayout.Height(dropdownBoxHeight));
 
         if (newIndex != selectedIndex)
         {
             selectedIndex = newIndex;
             LoadScene(sceneNames[selectedIndex]);
         }
+
         EditorGUI.EndDisabledGroup();
 
         GUILayout.EndHorizontal();
     }
 
-    static void RefreshSceneList()
+    private static void RefreshSceneList()
     {
         if (fetchAllScenes)
-        {
             sceneNames = Directory.GetFiles("Assets", "*.unity", SearchOption.AllDirectories)
                 .Select(path => Path.GetFileNameWithoutExtension(path))
                 .ToArray();
-        }
         else
-        {
             sceneNames = EditorBuildSettings.scenes
                 .Where(scene => scene.enabled)
                 .Select(scene => Path.GetFileNameWithoutExtension(scene.path))
                 .ToArray();
-        }
     }
 
-    static void CheckAndRefreshScenes()
+    private static void CheckAndRefreshScenes()
     {
         string[] currentScenes;
         if (fetchAllScenes)
-        {
             currentScenes = Directory.GetFiles("Assets", "*.unity", SearchOption.AllDirectories)
                 .Select(path => Path.GetFileNameWithoutExtension(path))
                 .ToArray();
-        }
         else
-        {
             currentScenes = EditorBuildSettings.scenes
                 .Where(scene => scene.enabled)
                 .Select(scene => Path.GetFileNameWithoutExtension(scene.path))
                 .ToArray();
-        }
 
         if (!currentScenes.SequenceEqual(sceneNames))
         {
@@ -148,10 +142,10 @@ public static class SceneSwitcherToolbar
         }
     }
 
-    static void SelectCurrentScene()
+    private static void SelectCurrentScene()
     {
-        string currentScene = Path.GetFileNameWithoutExtension(EditorSceneManager.GetActiveScene().path);
-        int index = System.Array.IndexOf(sceneNames, currentScene);
+        var currentScene = Path.GetFileNameWithoutExtension(EditorSceneManager.GetActiveScene().path);
+        var index = Array.IndexOf(sceneNames, currentScene);
         if (index != -1)
         {
             selectedIndex = index;
@@ -159,9 +153,9 @@ public static class SceneSwitcherToolbar
         }
     }
 
-    static void UpdateSceneSelection()
+    private static void UpdateSceneSelection()
     {
-        string currentScene = Path.GetFileNameWithoutExtension(EditorSceneManager.GetActiveScene().path);
+        var currentScene = Path.GetFileNameWithoutExtension(EditorSceneManager.GetActiveScene().path);
         if (currentScene != lastActiveScene)
         {
             lastActiveScene = currentScene;
@@ -169,28 +163,21 @@ public static class SceneSwitcherToolbar
         }
     }
 
-    static void LoadScene(string sceneName)
+    private static void LoadScene(string sceneName)
     {
         string scenePath;
         Debug.Log("<b><color=green>Thank you for using the package  -Ajay</color></b>");
 
         if (fetchAllScenes)
-        {
             scenePath = Directory.GetFiles("Assets", "*.unity", SearchOption.AllDirectories)
                 .FirstOrDefault(path => Path.GetFileNameWithoutExtension(path) == sceneName);
-        }
         else
-        {
             scenePath = EditorBuildSettings.scenes
                 .FirstOrDefault(scene => scene.enabled && scene.path.Contains(sceneName))?.path;
-        }
 
         if (!string.IsNullOrEmpty(scenePath))
         {
-            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-            {
-                EditorSceneManager.OpenScene(scenePath);
-            }
+            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) EditorSceneManager.OpenScene(scenePath);
         }
         else
         {
@@ -198,12 +185,10 @@ public static class SceneSwitcherToolbar
         }
     }
 
-    static void OnPlayModeChanged(PlayModeStateChange state)
+    private static void OnPlayModeChanged(PlayModeStateChange state)
     {
         if (state == PlayModeStateChange.EnteredPlayMode || state == PlayModeStateChange.ExitingPlayMode)
-        {
             EditorApplication.delayCall += () => AddToolbarUI();
-        }
     }
 }
 #endif

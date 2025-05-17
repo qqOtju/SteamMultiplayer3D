@@ -12,12 +12,14 @@
 #if !DISABLESTEAMWORKS
 
 using System.Runtime.InteropServices;
-using IntPtr = System.IntPtr;
+using System.Text;
 
-namespace Steamworks {
-	/// Setup callback for debug output, and the desired verbosity you want.
-	[System.Runtime.InteropServices.UnmanagedFunctionPointer(System.Runtime.InteropServices.CallingConvention.Cdecl)]
-	public delegate void FSteamNetworkingSocketsDebugOutput(ESteamNetworkingSocketsDebugOutputType nType, System.Text.StringBuilder pszMsg);
+namespace Steamworks
+{
+    /// Setup callback for debug output, and the desired verbosity you want.
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FSteamNetworkingSocketsDebugOutput(ESteamNetworkingSocketsDebugOutputType nType,
+        StringBuilder pszMsg);
 }
 
 #endif // !DISABLESTEAMWORKS

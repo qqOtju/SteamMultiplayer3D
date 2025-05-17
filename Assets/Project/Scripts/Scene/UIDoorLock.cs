@@ -9,28 +9,20 @@ using UnityEngine.UI;
 namespace Project.Scripts.Scene
 {
     [RequireComponent(typeof(Canvas))]
-    public class UIDoorLock: NetworkBehaviour, IInteractable
+    public class UIDoorLock : NetworkBehaviour, IInteractable
     {
         [SerializeField] private TMP_Text _displayText;
         [SerializeField] private Button[] _buttons;
         [SerializeField] private Button _clearButton;
         [SerializeField] private Button _enterButton;
         [SerializeField] private Button _backButton;
-
-        private List<int> _inputCode = new ();
+        private Canvas _canvas;
 
         private DoorLock _currentDoorLock;
-        private Canvas _canvas;
-        private Player _player;
-        
-        public event Action<string> OnCodeChanged; 
-        public event Action OnClose;
 
-        public void InitializeLocalPlayer(Player player)
-        {
-            _player = player;
-        }
-        
+        private readonly List<int> _inputCode = new();
+        private Player _player;
+
         private void Awake()
         {
             for (var index = 0; index < _buttons.Length; index++)
@@ -40,6 +32,7 @@ namespace Project.Scripts.Scene
                 var index1 = index;
                 button.onClick.AddListener(() => OnButtonClick(index1));
             }
+
             _clearButton.onClick.AddListener(OnClearButtonClick);
             _enterButton.onClick.AddListener(OnEnterButtonClick);
             _backButton.onClick.AddListener(Close);
@@ -60,6 +53,14 @@ namespace Project.Scripts.Scene
             _enterButton.onClick.RemoveAllListeners();
             _backButton.onClick.RemoveAllListeners();
         }
+
+        public void InitializeLocalPlayer(Player player)
+        {
+            _player = player;
+        }
+
+        public event Action<string> OnCodeChanged;
+        public event Action OnClose;
 
         private void OnButtonClick(int index)
         {
@@ -89,13 +90,13 @@ namespace Project.Scripts.Scene
                 OnClearButtonClick();
             }
         }
-        
+
         [Command(requiresAuthority = false)]
         private void CmdOpenDoor(NetworkBehaviour doorLock)
         {
             doorLock.GetComponent<DoorLock>().RpcOpen();
         }
-        
+
         private void Close()
         {
             _canvas.enabled = false;
@@ -115,11 +116,11 @@ namespace Project.Scripts.Scene
 
         public void Connect(DoorLock doorLock)
         {
-             _canvas.enabled = true;
-             _currentDoorLock = doorLock;
-             _player.EnablePlayerControls(false);
-             Cursor.visible = true;
-             Cursor.lockState = CursorLockMode.None;
+            _canvas.enabled = true;
+            _currentDoorLock = doorLock;
+            _player.EnablePlayerControls(false);
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
         }
     }
 }

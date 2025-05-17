@@ -11,9 +11,6 @@
 
 #if !DISABLESTEAMWORKS
 
-using System.Runtime.InteropServices;
-using IntPtr = System.IntPtr;
-
 #endif // !DISABLESTEAMWORKS
 
 // This file is no longer needed. Valve has removed the functionality.

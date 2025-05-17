@@ -1,25 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using Project.Scripts.Character;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Zenject;
+using Random = UnityEngine.Random;
 
 namespace Project.Scripts.Customization
 {
-    public class UICustomizationMenu: MonoBehaviour
+    public class UICustomizationMenu : MonoBehaviour
     {
-        [Title("Skin Item Configs")]
-        [SerializeField] private SkinItemConfig[] _skinItemConfigs;
+        [Title("Skin Item Configs")] [SerializeField]
+        private SkinItemConfig[] _skinItemConfigs;
+
         [SerializeField] private PlayerCustomization _playerCustomization;
-        [Title("Skin Item Colors")]
-        [SerializeField] private SkinItemColorConfig[] _skinColors;
+
+        [Title("Skin Item Colors")] [SerializeField]
+        private SkinItemColorConfig[] _skinColors;
+
         [SerializeField] private SkinItemColorConfig[] _hairColors;
         [SerializeField] private SkinItemColorConfig[] _eyeColors;
-        [Title("Buttons")]
-        [SerializeField] private Button _nextTopButton;
+
+        [Title("Buttons")] [SerializeField] private Button _nextTopButton;
+
         [SerializeField] private Button _prevTopButton;
         [SerializeField] private Button _nextBottomButton;
         [SerializeField] private Button _prevBottomButton;
@@ -32,24 +35,19 @@ namespace Project.Scripts.Customization
         [SerializeField] private Button _nextGlassesButton;
         [SerializeField] private Button _prevGlassesButton;
         [SerializeField] private Button _randomizeButton;
-        [Title("Color")] 
-        [SerializeField] private Button _colorButtonPrefab;
+
+        [Title("Color")] [SerializeField] private Button _colorButtonPrefab;
+
         [SerializeField] private Transform _skinColorParent;
         [SerializeField] private Transform _hairColorParent;
         [SerializeField] private Transform _eyeColorParent;
-        
-        private readonly Dictionary<SkinItemType, List<SkinItemConfig>> _skinItems = new ();
-        private readonly Dictionary<SkinItemType, int> _skinItemIndex = new ();
-        private readonly List<Button> _colorButtons = new ();
+        private readonly List<Button> _colorButtons = new();
+        private readonly Dictionary<SkinItemType, int> _skinItemIndex = new();
+
+        private readonly Dictionary<SkinItemType, List<SkinItemConfig>> _skinItems = new();
 
         private SkinData _skinData;
 
-        [Inject]
-        private void Construct(SkinData skinData)
-        {
-            _skinData = skinData;
-        }
-        
         private void Awake()
         {
             _nextTopButton.onClick.AddListener(NextTop);
@@ -77,6 +75,7 @@ namespace Project.Scripts.Customization
                 });
                 _colorButtons.Add(prefab);
             }
+
             var go = new GameObject(".");
             go.AddComponent<RectTransform>();
             go.transform.SetParent(_hairColorParent);
@@ -94,6 +93,7 @@ namespace Project.Scripts.Customization
                 });
                 _colorButtons.Add(prefab);
             }
+
             var go2 = new GameObject(".");
             go2.AddComponent<RectTransform>();
             go2.transform.SetParent(_eyeColorParent);
@@ -109,6 +109,7 @@ namespace Project.Scripts.Customization
                 });
                 _colorButtons.Add(prefab);
             }
+
             var go3 = new GameObject(".");
             go3.AddComponent<RectTransform>();
             go3.transform.SetParent(_skinColorParent);
@@ -121,9 +122,10 @@ namespace Project.Scripts.Customization
                 _skinItems.Add(skinItemType, new List<SkinItemConfig>());
                 _skinItemIndex.Add(skinItemType, 0);
             }
+
             foreach (var skinItemConfig in _skinItemConfigs)
                 _skinItems[skinItemConfig.SkinItemType].Add(skinItemConfig);
-            if(_skinData.GetSkinItem(SkinItemType.Top) == null)
+            if (_skinData.GetSkinItem(SkinItemType.Top) == null)
             {
                 _skinData.SetSkinItem(SkinItemType.Top, _skinItems[SkinItemType.Top][0]);
                 _skinData.SetSkinItem(SkinItemType.Bottom, _skinItems[SkinItemType.Bottom][0]);
@@ -157,6 +159,12 @@ namespace Project.Scripts.Customization
                 btn.onClick.RemoveAllListeners();
         }
 
+        [Inject]
+        private void Construct(SkinData skinData)
+        {
+            _skinData = skinData;
+        }
+
         private SkinItemConfig GetNextItem(SkinItemType skinItemType)
         {
             if (_skinItems[SkinItemType.Top].Count == 0)
@@ -164,6 +172,7 @@ namespace Project.Scripts.Customization
                 Debug.LogError("No skin items of type Top");
                 return null;
             }
+
             _skinItemIndex[skinItemType]++;
             if (_skinItemIndex[skinItemType] >= _skinItems[skinItemType].Count)
                 _skinItemIndex[skinItemType] = 0;
@@ -171,7 +180,7 @@ namespace Project.Scripts.Customization
             if (skinItemConfig == null) return null;
             return skinItemConfig;
         }
-        
+
         private SkinItemConfig GetPrevItem(SkinItemType skinItemType)
         {
             if (_skinItems[SkinItemType.Top].Count == 0)
@@ -179,6 +188,7 @@ namespace Project.Scripts.Customization
                 Debug.LogError("No skin items of type Top");
                 return null;
             }
+
             _skinItemIndex[skinItemType]--;
             if (_skinItemIndex[skinItemType] < 0)
                 _skinItemIndex[skinItemType] = _skinItems[skinItemType].Count - 1;
@@ -186,7 +196,7 @@ namespace Project.Scripts.Customization
             if (skinItemConfig == null) return null;
             return skinItemConfig;
         }
-        
+
         private void NextTop()
         {
             var skinItemConfig = GetNextItem(SkinItemType.Top);
@@ -216,7 +226,7 @@ namespace Project.Scripts.Customization
         }
 
         private void NextShoes()
-        { 
+        {
             var skinItemConfig = GetNextItem(SkinItemType.Shoes);
             _skinData.SetSkinItem(SkinItemType.Shoes, skinItemConfig);
             _playerCustomization.SetSkin(_skinData);
@@ -231,7 +241,7 @@ namespace Project.Scripts.Customization
 
         private void NextHair()
         {
-             var skinItemConfig = GetNextItem(SkinItemType.Hair);
+            var skinItemConfig = GetNextItem(SkinItemType.Hair);
             _skinData.SetSkinItem(SkinItemType.Hair, skinItemConfig);
             _playerCustomization.SetSkin(_skinData);
         }
@@ -275,13 +285,16 @@ namespace Project.Scripts.Customization
         {
             foreach (var skinItemType in Enum.GetValues(typeof(SkinItemType)))
             {
-                var skinItemConfig = _skinItems[(SkinItemType)skinItemType][UnityEngine.Random.Range(0, _skinItems[(SkinItemType)skinItemType].Count)];
+                var skinItemConfig =
+                    _skinItems[(SkinItemType)skinItemType][
+                        Random.Range(0, _skinItems[(SkinItemType)skinItemType].Count)];
                 if (skinItemConfig == null) continue;
                 _skinData.SetSkinItem((SkinItemType)skinItemType, skinItemConfig);
             }
-            _skinData.SetSkinColor(_skinColors[UnityEngine.Random.Range(0, _skinColors.Length)]);
-            _skinData.SetHairColor(_hairColors[UnityEngine.Random.Range(0, _hairColors.Length)]);
-            _skinData.SetEyeColor(_eyeColors[UnityEngine.Random.Range(0, _eyeColors.Length)]);
+
+            _skinData.SetSkinColor(_skinColors[Random.Range(0, _skinColors.Length)]);
+            _skinData.SetHairColor(_hairColors[Random.Range(0, _hairColors.Length)]);
+            _skinData.SetEyeColor(_eyeColors[Random.Range(0, _eyeColors.Length)]);
             _playerCustomization.SetSkin(_skinData);
         }
     }

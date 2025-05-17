@@ -12,11 +12,12 @@
 #if !DISABLESTEAMWORKS
 
 using System.Runtime.InteropServices;
-using IntPtr = System.IntPtr;
+using System.Text;
 
-namespace Steamworks {
-	[System.Runtime.InteropServices.UnmanagedFunctionPointer(System.Runtime.InteropServices.CallingConvention.Cdecl)]
-	public delegate void SteamAPIWarningMessageHook_t(int nSeverity, System.Text.StringBuilder pchDebugText);
+namespace Steamworks
+{
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SteamAPIWarningMessageHook_t(int nSeverity, StringBuilder pchDebugText);
 }
 
 #endif // !DISABLESTEAMWORKS

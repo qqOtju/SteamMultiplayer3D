@@ -11,55 +11,66 @@
 
 #if !DISABLESTEAMWORKS
 
-using System.Runtime.InteropServices;
-using IntPtr = System.IntPtr;
+using System;
 
-namespace Steamworks {
-	[System.Serializable]
-	public struct SiteId_t : System.IEquatable<SiteId_t>, System.IComparable<SiteId_t> {
-		public static readonly SiteId_t Invalid = new SiteId_t(0);
-		public ulong m_SiteId;
+namespace Steamworks
+{
+    [Serializable]
+    public struct SiteId_t : IEquatable<SiteId_t>, IComparable<SiteId_t>
+    {
+        public static readonly SiteId_t Invalid = new(0);
+        public ulong m_SiteId;
 
-		public SiteId_t(ulong value) {
-			m_SiteId = value;
-		}
+        public SiteId_t(ulong value)
+        {
+            m_SiteId = value;
+        }
 
-		public override string ToString() {
-			return m_SiteId.ToString();
-		}
+        public override string ToString()
+        {
+            return m_SiteId.ToString();
+        }
 
-		public override bool Equals(object other) {
-			return other is SiteId_t && this == (SiteId_t)other;
-		}
+        public override bool Equals(object other)
+        {
+            return other is SiteId_t && this == (SiteId_t)other;
+        }
 
-		public override int GetHashCode() {
-			return m_SiteId.GetHashCode();
-		}
+        public override int GetHashCode()
+        {
+            return m_SiteId.GetHashCode();
+        }
 
-		public static bool operator ==(SiteId_t x, SiteId_t y) {
-			return x.m_SiteId == y.m_SiteId;
-		}
+        public static bool operator ==(SiteId_t x, SiteId_t y)
+        {
+            return x.m_SiteId == y.m_SiteId;
+        }
 
-		public static bool operator !=(SiteId_t x, SiteId_t y) {
-			return !(x == y);
-		}
+        public static bool operator !=(SiteId_t x, SiteId_t y)
+        {
+            return !(x == y);
+        }
 
-		public static explicit operator SiteId_t(ulong value) {
-			return new SiteId_t(value);
-		}
+        public static explicit operator SiteId_t(ulong value)
+        {
+            return new SiteId_t(value);
+        }
 
-		public static explicit operator ulong(SiteId_t that) {
-			return that.m_SiteId;
-		}
+        public static explicit operator ulong(SiteId_t that)
+        {
+            return that.m_SiteId;
+        }
 
-		public bool Equals(SiteId_t other) {
-			return m_SiteId == other.m_SiteId;
-		}
+        public bool Equals(SiteId_t other)
+        {
+            return m_SiteId == other.m_SiteId;
+        }
 
-		public int CompareTo(SiteId_t other) {
-			return m_SiteId.CompareTo(other.m_SiteId);
-		}
-	}
+        public int CompareTo(SiteId_t other)
+        {
+            return m_SiteId.CompareTo(other.m_SiteId);
+        }
+    }
 }
 
 #endif // !DISABLESTEAMWORKS

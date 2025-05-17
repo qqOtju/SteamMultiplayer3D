@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Mirror;
-using UnityEngine;
 
 namespace Project.Scripts.Network
 {
@@ -12,20 +11,15 @@ namespace Project.Scripts.Network
         {
             writer.WriteInt(list.Count);
             foreach (var nb in list)
-            {
                 // Mirror вміє писати окремий NetworkBehaviour через його NetworkIdentity
                 writer.WriteNetworkBehaviour(nb);
-            }
         }
 
         public static List<NetworkBehaviour> ReadNetworkBehaviourList(this NetworkReader reader)
         {
-            int count = reader.ReadInt();
+            var count = reader.ReadInt();
             var list = new List<NetworkBehaviour>(count);
-            for (int i = 0; i < count; i++)
-            {
-                list.Add(reader.ReadNetworkBehaviour());
-            }
+            for (var i = 0; i < count; i++) list.Add(reader.ReadNetworkBehaviour());
             return list;
         }
 

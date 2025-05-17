@@ -5,10 +5,10 @@ using Zenject;
 
 namespace Project.Scripts.Customization
 {
-    public class PlayerCustomization: MonoBehaviour
+    public class PlayerCustomization : MonoBehaviour
     {
-        [Title("Body Parts")]
-        [SerializeField] private Transform _lowerArms;
+        [Title("Body Parts")] [SerializeField] private Transform _lowerArms;
+
         [SerializeField] private Transform _upperArms;
         [SerializeField] private Transform _feet;
         [SerializeField] private Transform _hands;
@@ -22,47 +22,49 @@ namespace Project.Scripts.Customization
         [SerializeField] private Transform _head;
         [SerializeField] private Transform _hairParent;
         [SerializeField] private Transform _bangsParent;
-        [Title("Materials")]
-        [SerializeField] private SkinnedMeshRenderer _headMeshRenderer;
+
+        [Title("Materials")] [SerializeField] private SkinnedMeshRenderer _headMeshRenderer;
+
         [SerializeField] private SkinnedMeshRenderer[] _bodyMeshRenderer;
         [SerializeField] private SkinnedMeshRenderer[] _hairMeshRenderer;
-        [Title("Skin Items")]
-        [SerializeField] private Transform[] _tops;
+
+        [Title("Skin Items")] [SerializeField] private Transform[] _tops;
+
         [SerializeField] private Transform[] _bottoms;
         [SerializeField] private Transform[] _shoes;
         [SerializeField] private Transform[] _hairs;
         [SerializeField] private Transform[] _bangs;
         [SerializeField] private Transform[] _glasses;
-
-        private Material[] _skinMaterials;
-        private Material[] _hairMaterials;
         private Material _eyeMaterial;
+        private Material[] _hairMaterials;
         private SkinData _skinData;
 
-        [Inject]
-        private void Construct(SkinData skinData)
-        {
-            _skinData = skinData;
-        }
-        
+        private Material[] _skinMaterials;
+
         private void Awake()
         {
             _skinMaterials = new Material[_bodyMeshRenderer.Length + 1];
             _skinMaterials[0] = _headMeshRenderer.material;
-            for (int i = 0; i < _bodyMeshRenderer.Length; i++)
+            for (var i = 0; i < _bodyMeshRenderer.Length; i++)
                 _skinMaterials[i + 1] = _bodyMeshRenderer[i].material;
             _hairMaterials = new Material[_hairMeshRenderer.Length];
-            for (int i = 0; i < _hairMeshRenderer.Length; i++)
+            for (var i = 0; i < _hairMeshRenderer.Length; i++)
                 _hairMaterials[i] = _hairMeshRenderer[i].material;
             _eyeMaterial = _headMeshRenderer.materials[2];
         }
 
         private void Start()
         {
-            if (_skinData == null || 
+            if (_skinData == null ||
                 _skinData.GetSkinItem(SkinItemType.Top) == null)
                 return;
             SetSkin(_skinData);
+        }
+
+        [Inject]
+        private void Construct(SkinData skinData)
+        {
+            _skinData = skinData;
         }
 
         public void SetSkin(SkinData skinData)
@@ -187,17 +189,17 @@ namespace Project.Scripts.Customization
         private void SetSkinColor(SkinItemColorConfig skinItemColorConfig)
         {
             foreach (var color in skinItemColorConfig.SkinItemColors)
-                foreach (var material in _skinMaterials)
-                    material.SetColor(color.MaterialColorName, color.Color);
+            foreach (var material in _skinMaterials)
+                material.SetColor(color.MaterialColorName, color.Color);
         }
-        
+
         private void SetHairColor(SkinItemColorConfig skinItemColorConfig)
         {
             foreach (var color in skinItemColorConfig.SkinItemColors)
-                foreach (var material in _hairMaterials)
-                    material.SetColor(color.MaterialColorName, color.Color);
+            foreach (var material in _hairMaterials)
+                material.SetColor(color.MaterialColorName, color.Color);
         }
-        
+
         private void SetEyeColor(SkinItemColorConfig skinItemColorConfig)
         {
             foreach (var color in skinItemColorConfig.SkinItemColors)

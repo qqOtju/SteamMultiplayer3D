@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Project.Scripts.Scene.Comp
 {
-    public class UIComputerWindowGif: UIComputerWindow
+    public class UIComputerWindowGif : UIComputerWindow
     {
         [SerializeField] private Image _uiImage;
         [SerializeField] private Sprite[] _gifFrames;

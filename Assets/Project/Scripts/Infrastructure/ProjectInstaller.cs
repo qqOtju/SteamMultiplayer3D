@@ -4,18 +4,20 @@ using Project.Scripts.Customization;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Zenject;
+using Random = UnityEngine.Random;
 
 namespace Project.Scripts.Infrastructure
 {
-    public class ProjectInstaller: MonoInstaller
+    public class ProjectInstaller : MonoInstaller
     {
-        [Title("Skin Item Configs")]
-        [SerializeField] private SkinItemConfig[] _skinItemConfigs;
+        [Title("Skin Item Configs")] [SerializeField]
+        private SkinItemConfig[] _skinItemConfigs;
+
         [SerializeField] private SkinItemColorConfig[] _skinColors;
         [SerializeField] private SkinItemColorConfig[] _hairColors;
         [SerializeField] private SkinItemColorConfig[] _eyeColors;
-        
-        private readonly Dictionary<SkinItemType, List<SkinItemConfig>> _skinItems = new ();
+
+        private readonly Dictionary<SkinItemType, List<SkinItemConfig>> _skinItems = new();
 
         public override void Start()
         {
@@ -50,13 +52,16 @@ namespace Project.Scripts.Infrastructure
         {
             foreach (var skinItemType in Enum.GetValues(typeof(SkinItemType)))
             {
-                var skinItemConfig = _skinItems[(SkinItemType)skinItemType][UnityEngine.Random.Range(0, _skinItems[(SkinItemType)skinItemType].Count)];
+                var skinItemConfig =
+                    _skinItems[(SkinItemType)skinItemType][
+                        Random.Range(0, _skinItems[(SkinItemType)skinItemType].Count)];
                 if (skinItemConfig == null) continue;
                 skinData.SetSkinItem((SkinItemType)skinItemType, skinItemConfig);
             }
-            skinData.SetSkinColor(_skinColors[UnityEngine.Random.Range(0, _skinColors.Length)]);
-            skinData.SetHairColor(_hairColors[UnityEngine.Random.Range(0, _hairColors.Length)]);
-            skinData.SetEyeColor(_eyeColors[UnityEngine.Random.Range(0, _eyeColors.Length)]);
+
+            skinData.SetSkinColor(_skinColors[Random.Range(0, _skinColors.Length)]);
+            skinData.SetHairColor(_hairColors[Random.Range(0, _hairColors.Length)]);
+            skinData.SetEyeColor(_eyeColors[Random.Range(0, _eyeColors.Length)]);
         }
     }
 }

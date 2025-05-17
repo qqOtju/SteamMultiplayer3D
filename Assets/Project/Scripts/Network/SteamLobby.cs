@@ -6,33 +6,32 @@ using UnityEngine;
 
 namespace Project.Scripts.Network
 {
-    public class SteamLobby: MonoBehaviour
+    public class SteamLobby : MonoBehaviour
     {
-        [SerializeField] private NetworkManager _networkManager;
-        
         private const string HostAddressKey = "HostAddress";
+        [SerializeField] private NetworkManager _networkManager;
+        protected Callback<GameLobbyJoinRequested_t> GameLobbyJoinRequested;
 
         protected Callback<LobbyCreated_t> LobbyCreated;
-        protected Callback<GameLobbyJoinRequested_t> GameLobbyJoinRequested;
         protected Callback<LobbyEnter_t> LobbyEntered;
-        
-        public event Action<bool> OnLobbyCreatedEvent;
 
         public static CSteamID LobbyID { get; private set; }
 
         private void Start()
         {
-            if (!SteamManager.Initialized) { return; }
+            if (!SteamManager.Initialized) return;
             LobbyCreated = Callback<LobbyCreated_t>.Create(OnLobbyCreated);
             GameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(OnGameLobbyJoinRequested);
             LobbyEntered = Callback<LobbyEnter_t>.Create(OnLobbyEntered);
         }
 
+        public event Action<bool> OnLobbyCreatedEvent;
+
         public void HostLobby()
         {
             SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, _networkManager.maxConnections);
         }
-        
+
         public void OpenSteamFriends()
         {
             if (SteamManager.Initialized)
@@ -46,6 +45,7 @@ namespace Project.Scripts.Network
                 OnLobbyCreatedEvent?.Invoke(false);
                 return;
             }
+
             LobbyID = new CSteamID(callback.m_ulSteamIDLobby);
             _networkManager.StartHost();
             SteamMatchmaking.SetLobbyData(
@@ -62,7 +62,7 @@ namespace Project.Scripts.Network
 
         private void OnLobbyEntered(LobbyEnter_t callback)
         {
-            if (NetworkServer.active) { return; }
+            if (NetworkServer.active) return;
             var hostAddress = SteamMatchmaking.GetLobbyData(
                 new CSteamID(callback.m_ulSteamIDLobby),
                 HostAddressKey);

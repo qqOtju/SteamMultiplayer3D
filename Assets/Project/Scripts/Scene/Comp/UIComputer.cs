@@ -6,23 +6,17 @@ using UnityEngine.UI;
 
 namespace Project.Scripts.Scene.Comp
 {
-    public class UIComputer: NetworkBehaviour
+    public class UIComputer : NetworkBehaviour
     {
+        private const int CursorUpdateInterval = 50;
         [SerializeField] private LabelWindow[] _labelWindows;
         [SerializeField] private RectTransform _uiCursor;
         [SerializeField] private Canvas _worldCanvas;
 
-        private const int CursorUpdateInterval = 50;
-        
         private int _cursorUpdateIndex;
-        private Camera _playerCamera;
         private bool _isActive;
-        
-        public void Init(Camera playerCamera)
-        {
-            _playerCamera = playerCamera;
-        }
-        
+        private Camera _playerCamera;
+
         private void Awake()
         {
             for (var index = 0; index < _labelWindows.Length; index++)
@@ -63,6 +57,11 @@ namespace Project.Scripts.Scene.Comp
             }
         }
 
+        public void Init(Camera playerCamera)
+        {
+            _playerCamera = playerCamera;
+        }
+
         private Vector2 UpdateCursor()
         {
             var mousePos = Mouse.current.position.ReadValue();
@@ -80,26 +79,37 @@ namespace Project.Scripts.Scene.Comp
                 _uiCursor.localPosition = localPoint;
                 return localPoint;
             }
-            else
-            {
-                var worldPos = _playerCamera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _playerCamera.nearClipPlane));
-                _uiCursor.position = worldPos;
-                return worldPos;
-            }
+
+            var worldPos =
+                _playerCamera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _playerCamera.nearClipPlane));
+            _uiCursor.position = worldPos;
+            return worldPos;
         }
 
         [Command(requiresAuthority = false)]
-        private void CmdUpdateCursor(Vector3 localPoint) => RpcUpdateCursor(localPoint);
+        private void CmdUpdateCursor(Vector3 localPoint)
+        {
+            RpcUpdateCursor(localPoint);
+        }
 
         [ClientRpc]
-        private void RpcUpdateCursor(Vector3 localPoint) => _uiCursor.localPosition = localPoint;
+        private void RpcUpdateCursor(Vector3 localPoint)
+        {
+            _uiCursor.localPosition = localPoint;
+        }
 
         [Command(requiresAuthority = false)]
-        private void CmdOpenWindow(int windowIndex) => RpcOpenWindow(windowIndex);
+        private void CmdOpenWindow(int windowIndex)
+        {
+            RpcOpenWindow(windowIndex);
+        }
 
         [ClientRpc]
-        private void RpcOpenWindow(int windowIndex) => _labelWindows[windowIndex].Window.Open();
-        
+        private void RpcOpenWindow(int windowIndex)
+        {
+            _labelWindows[windowIndex].Window.Open();
+        }
+
         [Command(requiresAuthority = false)]
         private void CmdCloseWindow(int windowIndex)
         {
@@ -123,7 +133,7 @@ namespace Project.Scripts.Scene.Comp
     {
         [SerializeField] private Button _labelButton;
         [SerializeField] private UIComputerWindow _window;
-        
+
         public Button LabelButton => _labelButton;
         public UIComputerWindow Window => _window;
     }

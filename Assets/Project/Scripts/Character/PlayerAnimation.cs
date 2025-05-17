@@ -5,9 +5,6 @@ namespace Project.Scripts.Character
 {
     public class PlayerAnimation
     {
-        private static readonly int SpeedAnimationHash = Animator.StringToHash("Speed");
-        private static readonly int CrouchAnimationHash = Animator.StringToHash("Crouch");
-        
         private const float BlinkEyeCloseTime = 0.15f;
         private const float BlinkOpeningTime = 0.06f;
         private const float BlinkClosingTime = 0.1f;
@@ -15,19 +12,21 @@ namespace Project.Scripts.Character
         private const float RotationSpeed = 10f;
         private const float MinYaw = -105f;
         private const float MaxYaw = 105f;
-        
-        private readonly SkinnedMeshRenderer _headMeshRenderer;
-        private readonly PlayerInput _playerInput;
-        private readonly int _blendShapeIndex;
+        private static readonly int SpeedAnimationHash = Animator.StringToHash("Speed");
+        private static readonly int CrouchAnimationHash = Animator.StringToHash("Crouch");
         private readonly Animator _animator;
-        private readonly Transform _viewTransform;
-        private readonly Transform _lookAtTarget;
+        private readonly int _blendShapeIndex;
         private readonly Transform _cameraTarget;
-        
+
+        private readonly SkinnedMeshRenderer _headMeshRenderer;
+        private readonly Transform _lookAtTarget;
+        private readonly PlayerInput _playerInput;
+        private readonly Transform _viewTransform;
+
         private Vector3 _currentVelocitySmooth;
-        
-        public PlayerAnimation(SkinnedMeshRenderer headMeshRenderer, Animator animator, 
-            PlayerInput playerInput, Transform viewTransform, 
+
+        public PlayerAnimation(SkinnedMeshRenderer headMeshRenderer, Animator animator,
+            PlayerInput playerInput, Transform viewTransform,
             Transform lookAtTarget, Transform cameraTarget)
         {
             _headMeshRenderer = headMeshRenderer;
@@ -36,24 +35,24 @@ namespace Project.Scripts.Character
             _viewTransform = viewTransform;
             _lookAtTarget = lookAtTarget;
             _cameraTarget = cameraTarget;
-            _blendShapeIndex = GetBlendShapeIndex(_headMeshRenderer, 
+            _blendShapeIndex = GetBlendShapeIndex(_headMeshRenderer,
                 "eyes_closed.01");
             playerInput.OnCrouch += SetCrouchAnimation;
         }
-        
+
         public void OnDestroy()
         {
             _playerInput.OnCrouch -= SetCrouchAnimation;
         }
-        
-        private int GetBlendShapeIndex(SkinnedMeshRenderer meshRenderer, 
+
+        private int GetBlendShapeIndex(SkinnedMeshRenderer meshRenderer,
             string blendShapeName)
         {
             var mesh = meshRenderer.sharedMesh;
             var index = mesh.GetBlendShapeIndex(blendShapeName);
             return index;
         }
-        
+
         private void SetCrouchAnimation(bool obj)
         {
             _animator.SetBool(CrouchAnimationHash, obj);
@@ -73,7 +72,7 @@ namespace Project.Scripts.Character
             {
                 time += Time.deltaTime;
                 var t = time / BlinkEyeCloseTime;
-                _headMeshRenderer.SetBlendShapeWeight(_blendShapeIndex, 
+                _headMeshRenderer.SetBlendShapeWeight(_blendShapeIndex,
                     Mathf.Lerp(0f, 100f, t));
                 yield return null;
             }
@@ -97,7 +96,7 @@ namespace Project.Scripts.Character
 
             _headMeshRenderer.SetBlendShapeWeight(_blendShapeIndex, 0f);
         }
-        
+
         public IEnumerator BlinkCoroutine()
         {
             while (true)
@@ -106,7 +105,7 @@ namespace Project.Scripts.Character
 
         public void SetAnimation(Vector3 currentVelocity)
         {
-            var horizontalSpeed = new Vector3(currentVelocity.x, 0f, 
+            var horizontalSpeed = new Vector3(currentVelocity.x, 0f,
                 currentVelocity.z).magnitude;
             _animator.SetFloat(SpeedAnimationHash, horizontalSpeed / Player.WalkSpeed);
         }
@@ -115,11 +114,11 @@ namespace Project.Scripts.Character
         {
             if (moveDirection == Vector3.zero) return;
             var targetRotation = Quaternion.LookRotation(moveDirection);
-            var rotation = Quaternion.Slerp(_viewTransform.rotation, 
+            var rotation = Quaternion.Slerp(_viewTransform.rotation,
                 targetRotation, RotationSpeed * Time.deltaTime);
             rotation.x = 0f;
             rotation.z = 0f;
-            _viewTransform.rotation = rotation;//
+            _viewTransform.rotation = rotation; //
         }
 
         public void SetIKTargets()
@@ -135,7 +134,8 @@ namespace Project.Scripts.Character
             var finalDir = clampedWorldDir.normalized;
             finalDir.y = cameraForward.y;
             var targetPosition = _cameraTarget.position + finalDir.normalized * 2f;
-            _lookAtTarget.position = Vector3.SmoothDamp(_lookAtTarget.position, targetPosition, ref _currentVelocitySmooth, 0.1f);
+            _lookAtTarget.position =
+                Vector3.SmoothDamp(_lookAtTarget.position, targetPosition, ref _currentVelocitySmooth, 0.1f);
         }
     }
 }

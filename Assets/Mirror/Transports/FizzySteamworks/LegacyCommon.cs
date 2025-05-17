@@ -1,29 +1,19 @@
 ﻿#if !DISABLESTEAMWORKS
-using Steamworks;
 using System;
 using System.Collections;
+using Steamworks;
 using UnityEngine;
 
 namespace Mirror.FizzySteam
 {
     public abstract class LegacyCommon
     {
-        private LegacyClient legacyClient => (LegacyClient)this;
-
-        private EP2PSend[] channels;
-        private int internal_ch => channels.Length;
-
-        protected enum InternalMessages : byte
-        {
-            CONNECT,
-            ACCEPT_CONNECT,
-            DISCONNECT
-        }
-
-        private Callback<P2PSessionRequest_t> callback_OnNewConnection = null;
-        private Callback<P2PSessionConnectFail_t> callback_OnConnectFail = null;
-
         protected readonly FizzySteamworks transport;
+        private Callback<P2PSessionConnectFail_t> callback_OnConnectFail;
+
+        private Callback<P2PSessionRequest_t> callback_OnNewConnection;
+
+        private readonly EP2PSend[] channels;
 
         protected LegacyCommon(FizzySteamworks transport)
         {
@@ -34,6 +24,9 @@ namespace Mirror.FizzySteam
 
             this.transport = transport;
         }
+
+        private LegacyClient legacyClient => (LegacyClient)this;
+        private int internal_ch => channels.Length;
 
         protected void Dispose()
         {
@@ -69,7 +62,8 @@ namespace Mirror.FizzySteam
                     Debug.LogError("Connection failed: Target user isn't connected to Steam.");
                     break;
                 case 4:
-                    Debug.LogError("Connection failed: The connection timed out because the target user didn't respond.");
+                    Debug.LogError(
+                        "Connection failed: The connection timed out because the target user didn't respond.");
                     break;
                 default:
                     Debug.LogError("Connection failed: Unknown error.");
@@ -82,9 +76,10 @@ namespace Mirror.FizzySteam
 #if UNITY_SERVER
             SteamGameServerNetworking.SendP2PPacket(target, new byte[] { (byte)type }, 1, EP2PSend.k_EP2PSendReliable, internal_ch);
 #else
-            SteamNetworking.SendP2PPacket(target, new byte[] { (byte)type }, 1, EP2PSend.k_EP2PSendReliable, internal_ch);
+            SteamNetworking.SendP2PPacket(target, new[] { (byte)type }, 1, EP2PSend.k_EP2PSendReliable, internal_ch);
 #endif
         }
+
         protected void Send(CSteamID host, byte[] msgBuffer, int channel)
         {
             try
@@ -92,7 +87,8 @@ namespace Mirror.FizzySteam
 #if UNITY_SERVER
             SteamGameServerNetworking.SendP2PPacket(host, msgBuffer, (uint)msgBuffer.Length, channels[Mathf.Min(channel, channels.Length - 1)], channel);
 #else
-                SteamNetworking.SendP2PPacket(host, msgBuffer, (uint)msgBuffer.Length, channels[Mathf.Min(channel, channels.Length - 1)], channel);
+                SteamNetworking.SendP2PPacket(host, msgBuffer, (uint)msgBuffer.Length,
+                    channels[Mathf.Min(channel, channels.Length - 1)], channel);
 #endif
             }
             catch (Exception ex)
@@ -113,7 +109,7 @@ namespace Mirror.FizzySteam
                 return SteamGameServerNetworking.ReadP2PPacket(receiveBuffer, packetSize, out _, out clientSteamID, channel);
             }
 #else
-                if (SteamNetworking.IsP2PPacketAvailable(out uint packetSize, channel))
+                if (SteamNetworking.IsP2PPacketAvailable(out var packetSize, channel))
                 {
                     receiveBuffer = new byte[packetSize];
                     return SteamNetworking.ReadP2PPacket(receiveBuffer, packetSize, out _, out clientSteamID, channel);
@@ -148,13 +144,9 @@ namespace Mirror.FizzySteam
         protected void WaitForClose(CSteamID cSteamID)
         {
             if (transport.enabled)
-            {
                 transport.StartCoroutine(DelayedClose(cSteamID));
-            }
             else
-            {
                 CloseP2PSessionWithUser(cSteamID);
-            }
         }
 
         private IEnumerator DelayedClose(CSteamID cSteamID)
@@ -167,27 +159,20 @@ namespace Mirror.FizzySteam
         {
             try
             {
-                while (transport.enabled && Receive(out CSteamID clientSteamID, out byte[] internalMessage, internal_ch))
+                while (transport.enabled && Receive(out var clientSteamID, out var internalMessage, internal_ch))
                 {
                     if (internalMessage.Length == 1)
                     {
                         OnReceiveInternalData((InternalMessages)internalMessage[0], clientSteamID);
                         return; // Wait one frame
                     }
-                    else
-                    {
-                        Debug.Log("Incorrect package length on internal channel.");
-                    }
+
+                    Debug.Log("Incorrect package length on internal channel.");
                 }
 
-                for (int chNum = 0; chNum < channels.Length; chNum++)
-                {
-                    while (transport.enabled && Receive(out CSteamID clientSteamID, out byte[] receiveBuffer, chNum))
-                    {
+                for (var chNum = 0; chNum < channels.Length; chNum++)
+                    while (transport.enabled && Receive(out var clientSteamID, out var receiveBuffer, chNum))
                         OnReceiveData(receiveBuffer, clientSteamID, chNum);
-                    }
-                }
-
             }
             catch (Exception e)
             {
@@ -199,6 +184,13 @@ namespace Mirror.FizzySteam
         protected abstract void OnReceiveInternalData(InternalMessages type, CSteamID clientSteamID);
         protected abstract void OnReceiveData(byte[] data, CSteamID clientSteamID, int channel);
         protected abstract void OnConnectionFailed(CSteamID remoteId);
+
+        protected enum InternalMessages : byte
+        {
+            CONNECT,
+            ACCEPT_CONNECT,
+            DISCONNECT
+        }
     }
 }
 #endif // !DISABLESTEAMWORKS

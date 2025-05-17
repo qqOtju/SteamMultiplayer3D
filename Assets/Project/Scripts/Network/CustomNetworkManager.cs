@@ -7,25 +7,25 @@ using UnityEngine.SceneManagement;
 
 namespace Project.Scripts.Network
 {
-    public class CustomNetworkManager: NetworkManager
+    public class CustomNetworkManager : NetworkManager
     {
-        [Scene] [SerializeField] private string _gameScene;
-        
         private const int LobbySceneIndex = 1;
-        
+        [Scene] [SerializeField] private string _gameScene;
+
         public static List<UILobbyPlayer> RoomPlayers { get; } = new();
         public static List<NetworkConnectionToClient> RoomConnections { get; } = new();
-        
+
         public static event Func<NetworkConnectionToClient, UILobbyPlayer> OnServerAddPlayerAction;
         public static event Action OnGameStarted;
 
         public override void OnServerConnect(NetworkConnectionToClient conn)
         {
-            if(numPlayers >= maxConnections)
+            if (numPlayers >= maxConnections)
             {
                 conn.Disconnect();
                 return;
             }
+
             //Prevent players from connecting to running game. Maybe change this later
             if (SceneManager.GetActiveScene().buildIndex != LobbySceneIndex)
                 conn.Disconnect();
@@ -42,8 +42,9 @@ namespace Project.Scripts.Network
                 Debug.Log("OnServerAddPlayerAction returned null" + player);
                 return;
             }
+
             Debug.Log("OnServerAddPlayerAction: " + player);
-            if(isLeader)
+            if (isLeader)
             {
                 player.OnStartGame += HandleStartGame;
                 player.SetReadyStatus(true);
@@ -54,6 +55,7 @@ namespace Project.Scripts.Network
                 player.SetReadyStatus(false);
                 player.RpcUpdateReadyStatus(false);
             }
+
             player.SetLeader(isLeader);
             player.RpcUpdateLeaderStatus(isLeader);
             RoomPlayers.Add(player);
@@ -82,6 +84,7 @@ namespace Project.Scripts.Network
                 RoomPlayers.Remove(player);
                 // NotifyPlayersOfReadyStatus();
             }
+
             base.OnServerDisconnect(conn);
         }
 
@@ -89,18 +92,19 @@ namespace Project.Scripts.Network
         {
             RoomPlayers.Clear();
         }
-        
+
         /*private void NotifyPlayersOfReadyStatus()
         {
             var isReadyToStart = IsReadyToStart();
             foreach (var player in RoomPlayers)
                 player.HandleReadyToStart(isReadyToStart);
         }*/
-        
+
         private bool IsReadyToStart()
         {
             foreach (var player in RoomPlayers)
-                if(!player.IsReady) return false;
+                if (!player.IsReady)
+                    return false;
             return true;
         }
     }

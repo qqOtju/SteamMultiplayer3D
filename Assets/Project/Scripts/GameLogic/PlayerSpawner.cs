@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Mirror;
 using Project.Scripts.Character;
 using Project.Scripts.Scene;
@@ -10,26 +9,19 @@ using Zenject;
 
 namespace Project.Scripts.GameLogic
 {
-    public class PlayerSpawner: NetworkBehaviour
+    public class PlayerSpawner : NetworkBehaviour
     {
         [SerializeField] private Player _playerPrefab;
         [SerializeField] private CinemachineCamera _cinemachineCamera;
-        [SerializeField] private Transform[]  _spawnPoints;
+        [SerializeField] private Transform[] _spawnPoints;
         [SerializeField] private MonoBehaviour[] _interactableObjects;
         [SerializeField] private UIDoorLock _doorLock;
-
-        private readonly List<Player> _players = new();
         private readonly List<IInteractable> _interactables = new();
+
         private DiContainer _diContainer;
-        
-        public List<Player> Players => _players;
-        
-        [Inject]
-        private void Construct(DiContainer container)
-        {
-            _diContainer = container;   
-        }
-        
+
+        public List<Player> Players { get; } = new();
+
         private void Awake()
         {
             TestNetworkManager.OnGameStarted += SpawnPlayers;
@@ -38,6 +30,12 @@ namespace Project.Scripts.GameLogic
         private void OnDestroy()
         {
             TestNetworkManager.OnGameStarted -= SpawnPlayers;
+        }
+
+        [Inject]
+        private void Construct(DiContainer container)
+        {
+            _diContainer = container;
         }
 
         [Server]
@@ -55,7 +53,7 @@ namespace Project.Scripts.GameLogic
                 _diContainer.Inject(playerInstance);
                 RpcSetPlayer(playerInstance, position);
                 TargetRpcSetCameraTarget(player, playerInstance);
-                _players.Add(playerInstance);
+                Players.Add(playerInstance);
             }
         }
 
@@ -75,7 +73,7 @@ namespace Project.Scripts.GameLogic
                     _interactables.Add(interactableObject);
             var player = network.GetComponent<Player>();
             var cameraTarget = new CameraTarget();
-            cameraTarget.TrackingTarget  = player.CameraTarget;
+            cameraTarget.TrackingTarget = player.CameraTarget;
             _cinemachineCamera.Target = cameraTarget;
             Debug.Log($"Interactables count: {_interactables.Count}");
             player.SetUIDoorLock(_doorLock);

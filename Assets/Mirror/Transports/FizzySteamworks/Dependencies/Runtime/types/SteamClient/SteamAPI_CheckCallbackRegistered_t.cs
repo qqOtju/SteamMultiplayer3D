@@ -12,11 +12,12 @@
 #if !DISABLESTEAMWORKS
 
 using System.Runtime.InteropServices;
-using IntPtr = System.IntPtr;
 
-namespace Steamworks {
-	[System.Runtime.InteropServices.UnmanagedFunctionPointer(System.Runtime.InteropServices.CallingConvention.StdCall)] // TODO: This is probably wrong, will likely crash on some platform.
-	public delegate void SteamAPI_CheckCallbackRegistered_t(int iCallbackNum);
+namespace Steamworks
+{
+    [UnmanagedFunctionPointer(CallingConvention
+        .StdCall)] // TODO: This is probably wrong, will likely crash on some platform.
+    public delegate void SteamAPI_CheckCallbackRegistered_t(int iCallbackNum);
 }
 
 #endif // !DISABLESTEAMWORKS

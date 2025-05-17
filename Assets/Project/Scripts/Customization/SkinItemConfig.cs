@@ -4,12 +4,12 @@ using UnityEngine;
 namespace Project.Scripts.Customization
 {
     [CreateAssetMenu(fileName = "SkinItemConfig", menuName = "Customization/SkinItemConfig")]
-    public class SkinItemConfig: ScriptableObject
+    public class SkinItemConfig : ScriptableObject
     {
         [SerializeField] private string _itemName;
         [SerializeField] private SkinItemType _skinItemType;
         [SerializeField] private BodyPart _bodyPart;
-        
+
         public string ItemName => _itemName;
         public SkinItemType SkinItemType => _skinItemType;
         public BodyPart BodyPart => _bodyPart;

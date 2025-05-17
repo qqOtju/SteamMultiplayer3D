@@ -6,10 +6,16 @@ using Zenject;
 
 namespace Project.Scripts.Customization
 {
-    public class NetworkCustomizationPlayer: NetworkBehaviour
+    public class NetworkCustomizationPlayer : NetworkBehaviour
     {
-        [Title("Body Parts")]
-        [SerializeField] private Transform _lowerArms;
+        private static readonly int ColorB1 = Shader.PropertyToID("_Color_B_1");
+        private static readonly int ColorB2 = Shader.PropertyToID("_Color_B_2");
+        private static readonly int ColorC1 = Shader.PropertyToID("_Color_C_1");
+        private static readonly int ColorA1 = Shader.PropertyToID("_Color_A_1");
+        private static readonly int ColorA2 = Shader.PropertyToID("_Color_A_2");
+
+        [Title("Body Parts")] [SerializeField] private Transform _lowerArms;
+
         [SerializeField] private Transform _upperArms;
         [SerializeField] private Transform _feet;
         [SerializeField] private Transform _hands;
@@ -23,54 +29,51 @@ namespace Project.Scripts.Customization
         [SerializeField] private Transform _head;
         [SerializeField] private Transform _hairParent;
         [SerializeField] private Transform _bangsParent;
-        [Title("Materials")]
-        [SerializeField] private SkinnedMeshRenderer _headMeshRenderer;
+
+        [Title("Materials")] [SerializeField] private SkinnedMeshRenderer _headMeshRenderer;
+
         [SerializeField] private SkinnedMeshRenderer[] _bodyMeshRenderer;
         [SerializeField] private SkinnedMeshRenderer[] _hairMeshRenderer;
-        [Title("Skin Items")]
-        [SerializeField] private Transform[] _tops;
+
+        [Title("Skin Items")] [SerializeField] private Transform[] _tops;
+
         [SerializeField] private Transform[] _bottoms;
         [SerializeField] private Transform[] _shoes;
         [SerializeField] private Transform[] _hairs;
         [SerializeField] private Transform[] _bangs;
         [SerializeField] private Transform[] _glasses;
-        
-        private static readonly int ColorB1 = Shader.PropertyToID("_Color_B_1");
-        private static readonly int ColorB2 = Shader.PropertyToID("_Color_B_2");
-        private static readonly int ColorC1 = Shader.PropertyToID("_Color_C_1");
-        private static readonly int ColorA1 = Shader.PropertyToID("_Color_A_1");
-        private static readonly int ColorA2 = Shader.PropertyToID("_Color_A_2");
-        
-        private Material[] _skinMaterials;
-        private Material[] _hairMaterials;
         private Material _eyeMaterial;
-        
+        private Material[] _hairMaterials;
+
         [SyncVar(hook = nameof(OnSkinDTOChanged))]
         private string _jsonSkinDTO;
-        
+
         private SkinData _skinData;
         private SkinDto _skinDTO;
 
-        [Inject]
-        private void Construct(SkinData skinData)
-        {
-            _skinData = skinData;
-            Debug.Log($"Constructed: {skinData.GetSkinItem(SkinItemType.Top).ItemName}, {skinData.GetSkinItem(SkinItemType.Bottom).ItemName}, {skinData.GetSkinItem(SkinItemType.Shoes).ItemName}, {skinData.GetSkinItem(SkinItemType.Hair).ItemName}, {skinData.GetSkinItem(SkinItemType.Bangs).ItemName}, {skinData.GetSkinItem(SkinItemType.Glasses).ItemName}");
-            //ClientSetSkin called here because Construct is called after OnStartAuthority
-            if(!isOwned) return;
-            ClientSetSkin(UILobbyPlayer.ConvertToDto(_skinData));
-        }
+        private Material[] _skinMaterials;
 
         private void Awake()
         {
             _skinMaterials = new Material[_bodyMeshRenderer.Length + 1];
             _skinMaterials[0] = _headMeshRenderer.material;
-            for (int i = 0; i < _bodyMeshRenderer.Length; i++)
+            for (var i = 0; i < _bodyMeshRenderer.Length; i++)
                 _skinMaterials[i + 1] = _bodyMeshRenderer[i].material;
             _hairMaterials = new Material[_hairMeshRenderer.Length];
-            for (int i = 0; i < _hairMeshRenderer.Length; i++)
+            for (var i = 0; i < _hairMeshRenderer.Length; i++)
                 _hairMaterials[i] = _hairMeshRenderer[i].material;
             _eyeMaterial = _headMeshRenderer.materials[2];
+        }
+
+        [Inject]
+        private void Construct(SkinData skinData)
+        {
+            _skinData = skinData;
+            Debug.Log(
+                $"Constructed: {skinData.GetSkinItem(SkinItemType.Top).ItemName}, {skinData.GetSkinItem(SkinItemType.Bottom).ItemName}, {skinData.GetSkinItem(SkinItemType.Shoes).ItemName}, {skinData.GetSkinItem(SkinItemType.Hair).ItemName}, {skinData.GetSkinItem(SkinItemType.Bangs).ItemName}, {skinData.GetSkinItem(SkinItemType.Glasses).ItemName}");
+            //ClientSetSkin called here because Construct is called after OnStartAuthority
+            if (!isOwned) return;
+            ClientSetSkin(UILobbyPlayer.ConvertToDto(_skinData));
         }
 
         public override void OnStartClient()
@@ -83,24 +86,25 @@ namespace Project.Scripts.Customization
         [Client]
         public void ClientSetSkin(SkinDto skin)
         {
-            if(skin.bangs == null || skin.eyeColorB1 == new Color(0,0,0,0))
+            if (skin.bangs == null || skin.eyeColorB1 == new Color(0, 0, 0, 0))
             {
-                Debug.Log($"Skin is null");
+                Debug.Log("Skin is null");
                 return;
             }
+
             Debug.Log($"ClientSetSkin called on {gameObject.name} (isClient={isClient}, isOwned={isOwned}");
             var json = JsonUtility.ToJson(skin);
             CmdSetSkin(json);
         }
-        
-        
+
+
         [Command(requiresAuthority = false)]
         private void CmdSetSkin(string skin)
         {
             Debug.Log($"CmdSetSkin received on server (isServer={isServer})");
             _jsonSkinDTO = skin;
         }
-        
+
         private void OnSkinDTOChanged(string oldSkin, string newSkin)
         {
             Debug.Log($"OnSkinDTOChanged called (isClient={isClient}), new skin: {newSkin}");
@@ -143,6 +147,7 @@ namespace Project.Scripts.Customization
                 material.SetColor(ColorA1, skinDto.hairColorA1);
                 material.SetColor(ColorA2, skinDto.hairColorA2);
             }
+
             _eyeMaterial.SetColor(ColorB1, skinDto.eyeColorB1);
             _eyeMaterial.SetColor(ColorB2, skinDto.eyeColorB2);
             _eyeMaterial.SetColor(ColorC1, skinDto.eyeColorC1);
@@ -153,7 +158,7 @@ namespace Project.Scripts.Customization
             if (bodyPart != null)
                 bodyPart.gameObject.SetActive(isActive);
         }
-        
+
         private void SetTop(string itemName)
         {
             foreach (var top in _tops)

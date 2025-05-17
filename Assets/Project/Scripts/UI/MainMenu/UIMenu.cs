@@ -5,23 +5,25 @@ using UnityEngine.UI;
 
 namespace Project.Scripts.UI.MainMenu
 {
-    public class UIMenu: MonoBehaviour
+    public class UIMenu : MonoBehaviour
     {
-        [Title("Buttons")]
-        [SerializeField] private Button _hostButton;
+        [Title("Buttons")] [SerializeField] private Button _hostButton;
+
         [SerializeField] private Button _joinButton;
         [SerializeField] private Button _customizationButton;
         [SerializeField] private Button _settingsButton;
         [SerializeField] private Button _exitButton;
-        [Title("Panels")]
-        [SerializeField] private Canvas _customizationPanel;
+
+        [Title("Panels")] [SerializeField] private Canvas _customizationPanel;
+
         [SerializeField] private Canvas _settingsPanel;
-        [Title("Network")]
-        [SerializeField] private CustomNetworkManager _networkManager;
+
+        [Title("Network")] [SerializeField] private CustomNetworkManager _networkManager;
+
         [SerializeField] private SteamLobby _steamLobby;
 
         private Canvas _mainMenuPanel;
-        
+
         private void Awake()
         {
             _hostButton.onClick.AddListener(OnHostButtonClicked);
@@ -52,7 +54,7 @@ namespace Project.Scripts.UI.MainMenu
             _steamLobby.HostLobby();
             // _networkManager.StartHost();
         }
-        
+
         private void OnJoinButtonClicked()
         {
             _steamLobby.OpenSteamFriends();
@@ -63,14 +65,18 @@ namespace Project.Scripts.UI.MainMenu
             _hostButton.interactable = false;*/
         }
 
-        private void OnCustomizationButtonClicked()//
+        private void OnCustomizationButtonClicked() //
         {
             _customizationPanel.enabled = !_customizationPanel.enabled;
         }
 
-        private void OnSettingsButtonClicked() { }
+        private void OnSettingsButtonClicked()
+        {
+        }
 
-        private void OnExitButtonClicked() { }
+        private void OnExitButtonClicked()
+        {
+        }
 
         private void OnLobbyCreated(bool obj)
         {
