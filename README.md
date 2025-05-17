@@ -27,7 +27,7 @@ Mirror, FizzySteamworks, Animation Rigging (IK), Cinemachine, Zenject (Dependenc
 ![GIF](Screenshots/ezgif-648c9df9f60869.gif)
 
 ### Synchronized Events
-![GIF](Screenshots/ezgif-265a0197387614.gif)
+![GIF](Screenshots/ezgif-53b1a3506bd53e.gif)
 
 ### Computer Interaction
 ![GIF](Screenshots/ezgif-53875f3e35b5e0.gif)
