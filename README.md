@@ -19,7 +19,7 @@ to the player's view direction using inverse kinematics.
 
 Mirror, FizzySteamworks, Animation Rigging (IK), Cinemachine, Zenject (Dependency Injection), Unity Input System... 
 
-## Demonstration GIF's (may take some time to load)
+## Demonstration GIFs (may take some time to load)
 
 ### Character Customization
 ![GIF](Screenshots/ezgif-6866598cba57be.gif)
